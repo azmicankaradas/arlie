@@ -1,0 +1,50 @@
+@import "tailwindcss";
+
+@theme inline {
+  /* Arlie Renk Paleti */
+  --color-arlie-white: #FFFFFF;
+  --color-arlie-light: #F9F9F9;
+  --color-arlie-charcoal: #1A1A1A;
+  --color-arlie-beige: #F5F0EB;
+  --color-arlie-gold: #C9A96E;
+
+  /* Tipografi */
+  --font-serif: var(--font-cormorant), "Georgia", serif;
+  --font-sans: var(--font-montserrat), "Helvetica Neue", sans-serif;
+}
+
+/* Base Styles */
+html {
+  scroll-behavior: smooth;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+::selection {
+  background-color: #F5F0EB;
+  color: #1A1A1A;
+}
+
+::-webkit-scrollbar {
+  width: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: #F9F9F9;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(26, 26, 26, 0.12);
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(26, 26, 26, 0.25);
+}
+
+body {
+  background-color: #FFFFFF;
+  color: #1A1A1A;
+  font-family: var(--font-sans);
+  overflow-x: hidden;
+}
