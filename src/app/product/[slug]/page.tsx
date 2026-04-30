@@ -6,14 +6,15 @@ import SideCart from "@/components/cart/SideCart";
 import ImageGallery from "@/components/product/ImageGallery";
 import ProductInfo from "@/components/product/ProductInfo";
 import StickyAddToCart from "@/components/product/StickyAddToCart";
-import { getProductBySlug, products } from "@/lib/data";
+import { getProductBySlug, getAllProducts } from "@/lib/data";
 
 interface ProductPageProps {
   params: Promise<{ slug: string }>;
 }
 
 export async function generateStaticParams() {
-  return products.map((product) => ({
+  const allProducts = await getAllProducts();
+  return allProducts.map((product) => ({
     slug: product.slug,
   }));
 }
@@ -22,7 +23,7 @@ export async function generateMetadata({
   params,
 }: ProductPageProps): Promise<Metadata> {
   const { slug } = await params;
-  const product = getProductBySlug(slug);
+  const product = await getProductBySlug(slug);
   if (!product) return { title: "Ürün Bulunamadı" };
 
   return {
@@ -33,7 +34,7 @@ export async function generateMetadata({
 
 export default async function ProductPage({ params }: ProductPageProps) {
   const { slug } = await params;
-  const product = getProductBySlug(slug);
+  const product = await getProductBySlug(slug);
 
   if (!product) {
     notFound();

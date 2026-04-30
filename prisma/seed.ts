@@ -1,22 +1,25 @@
 /**
- * Arlie Data Layer
+ * Prisma Seed Script
  *
- * Prisma ORM üzerinden veritabanı sorguları.
- * Veritabanı bağlantısı yoksa statik fallback verilerini kullanır.
+ * Mevcut data.ts içindeki ürün verilerini PostgreSQL veritabanına aktarır.
+ * Admin kullanıcı oluşturur.
  *
- * Bu yaklaşım frontend'in kırılmadan çalışmasını sağlar:
- * - DB bağlı → Prisma sorguları
- * - DB yok → Statik veriler (geliştirme kolaylığı)
+ * Kullanım:
+ *   npx tsx prisma/seed.ts
+ *   veya
+ *   npm run db:seed
  */
 
-import type { Product } from "@/types/product";
+import { PrismaClient, Category } from "@prisma/client";
+import { hash } from "bcryptjs";
+
+const prisma = new PrismaClient();
 
 // ────────────────────────────────────────────────────────────
-// Statik Fallback Verileri (DB olmadan çalışmak için)
+// Mevcut data.ts'den alınan ürün verileri
 // ────────────────────────────────────────────────────────────
-const staticProducts: Product[] = [
+const products = [
   {
-    id: "1",
     slug: "luna-kolye",
     name: "Luna Kolye",
     description:
@@ -24,7 +27,7 @@ const staticProducts: Product[] = [
     story:
       "Her gece gökyüzünde parlayan ay, Luna koleksiyonumuzun ilham kaynağıdır. Ustalarımız tarafından tek tek elle cilalanır ve her parça benzersiz bir ışıltı taşır.",
     price: 1250,
-    category: "necklaces",
+    category: Category.necklaces,
     materials: ["925 Ayar Gümüş", "18K Altın Kaplama"],
     sustainability: "Geri dönüştürülmüş gümüş kullanılarak üretilmiştir.",
     images: ["/products/luna-1.jpg", "/products/luna-2.jpg"],
@@ -32,7 +35,6 @@ const staticProducts: Product[] = [
     featured: true,
   },
   {
-    id: "2",
     slug: "aurora-yuzuk",
     name: "Aurora Yüzük",
     description:
@@ -40,7 +42,7 @@ const staticProducts: Product[] = [
     story:
       "Kuzey ışıklarının gökyüzünde yarattığı o büyülü anı yakalamak istedik. Aurora, ışığın metallerle buluştuğu minimalist bir başyapıttır.",
     price: 890,
-    category: "rings",
+    category: Category.rings,
     materials: ["925 Ayar Gümüş"],
     sustainability:
       "Etik kaynaklardan temin edilmiş malzemelerle üretilmiştir.",
@@ -49,7 +51,6 @@ const staticProducts: Product[] = [
     featured: true,
   },
   {
-    id: "3",
     slug: "stella-kupe",
     name: "Stella Küpe",
     description:
@@ -57,7 +58,7 @@ const staticProducts: Product[] = [
     story:
       "Gece gökyüzündeki yıldızların sonsuz zarafetinden doğan Stella, kulağınızda hafif ve şık bir dokunuş bırakır.",
     price: 680,
-    category: "earrings",
+    category: Category.earrings,
     materials: ["925 Ayar Gümüş", "Zirkon Taş"],
     sustainability: "Çevre dostu ambalaj ile teslim edilir.",
     images: ["/products/stella-1.jpg", "/products/stella-2.jpg"],
@@ -65,7 +66,6 @@ const staticProducts: Product[] = [
     featured: true,
   },
   {
-    id: "4",
     slug: "ivy-bileklik",
     name: "Ivy Bileklik",
     description:
@@ -73,7 +73,7 @@ const staticProducts: Product[] = [
     story:
       "Sarmaşıkların doğada yarattığı organik çizgiler, Ivy bilekliğimizin tasarım felsefesini oluşturur. Doğallık ve zarafet bir arada.",
     price: 750,
-    category: "bracelets",
+    category: Category.bracelets,
     materials: ["925 Ayar Gümüş", "18K Altın Kaplama"],
     sustainability: "Sürdürülebilir üretim süreçleriyle imal edilmiştir.",
     images: ["/products/ivy-1.jpg", "/products/ivy-2.jpg"],
@@ -81,7 +81,6 @@ const staticProducts: Product[] = [
     featured: true,
   },
   {
-    id: "5",
     slug: "nova-kolye",
     name: "Nova Kolye",
     description:
@@ -89,7 +88,7 @@ const staticProducts: Product[] = [
     story:
       "Evrenin derinliklerinde doğan yeni yıldızlar gibi, Nova kolye de her giyildiğinde yeni bir ışıltı sunar.",
     price: 1450,
-    category: "necklaces",
+    category: Category.necklaces,
     materials: ["925 Ayar Gümüş", "14K Altın"],
     sustainability: "Karbon nötr üretim süreciyle üretilmiştir.",
     images: ["/products/nova-1.jpg", "/products/nova-2.jpg"],
@@ -97,7 +96,6 @@ const staticProducts: Product[] = [
     featured: false,
   },
   {
-    id: "6",
     slug: "eden-yuzuk",
     name: "Eden Yüzük",
     description:
@@ -105,7 +103,7 @@ const staticProducts: Product[] = [
     story:
       "Eden, karmaşanın ortasında sadeliğin gücünü hatırlatır. Temiz çizgileri ve minimal formuyla günlük şıklığınızın vazgeçilmezi.",
     price: 720,
-    category: "rings",
+    category: Category.rings,
     materials: ["925 Ayar Gümüş"],
     sustainability: "Geri dönüştürülmüş malzemelerle üretilmiştir.",
     images: ["/products/eden-1.jpg", "/products/eden-2.jpg"],
@@ -113,7 +111,6 @@ const staticProducts: Product[] = [
     featured: false,
   },
   {
-    id: "7",
     slug: "pearl-kupe",
     name: "Pearl Küpe",
     description:
@@ -121,7 +118,7 @@ const staticProducts: Product[] = [
     story:
       "İncinin doğadaki yolculuğu, sabır ve zarafetin sembolüdür. Pearl küpelerimiz bu yolculuğun minimalist bir yansımasıdır.",
     price: 920,
-    category: "earrings",
+    category: Category.earrings,
     materials: ["925 Ayar Gümüş", "Tatlı Su İncisi"],
     sustainability:
       "Sorumlu kaynaklardan temin edilmiş inciler kullanılmıştır.",
@@ -130,7 +127,6 @@ const staticProducts: Product[] = [
     featured: false,
   },
   {
-    id: "8",
     slug: "aura-bileklik",
     name: "Aura Bileklik",
     description:
@@ -138,7 +134,7 @@ const staticProducts: Product[] = [
     story:
       "Her insanın kendine özgü bir aurası vardır. Bu bileklik, o görünmez enerjiyi gümüşün zarif çizgileriyle görünür kılar.",
     price: 580,
-    category: "bracelets",
+    category: Category.bracelets,
     materials: ["925 Ayar Gümüş"],
     sustainability:
       "Minimal ambalaj ve çevre dostu süreçlerle üretilmiştir.",
@@ -147,7 +143,6 @@ const staticProducts: Product[] = [
     featured: false,
   },
   {
-    id: "9",
     slug: "celeste-kolye",
     name: "Celeste Kolye",
     description:
@@ -155,7 +150,7 @@ const staticProducts: Product[] = [
     story:
       "Celeste, Latince'de 'göksel' anlamına gelir. Bu kolye, gökyüzünün uçsuz bucaksız güzelliğini minimalist bir formda sunar.",
     price: 1100,
-    category: "necklaces",
+    category: Category.necklaces,
     materials: ["925 Ayar Gümüş", "Akuamarin Taş"],
     sustainability:
       "Etik kaynaklı taşlar ve geri dönüştürülmüş gümüş ile üretilmiştir.",
@@ -164,7 +159,6 @@ const staticProducts: Product[] = [
     featured: false,
   },
   {
-    id: "10",
     slug: "sol-yuzuk",
     name: "Sol Yüzük",
     description:
@@ -172,7 +166,7 @@ const staticProducts: Product[] = [
     story:
       "Güneş, yaşamın kaynağıdır. Sol yüzük, bu sonsuz enerjiyi altın tonlarıyla parmağınıza taşır.",
     price: 980,
-    category: "rings",
+    category: Category.rings,
     materials: ["925 Ayar Gümüş", "18K Altın Kaplama"],
     sustainability:
       "Sürdürülebilir altın kaplama teknolojisi ile üretilmiştir.",
@@ -181,7 +175,6 @@ const staticProducts: Product[] = [
     featured: false,
   },
   {
-    id: "11",
     slug: "vega-kupe",
     name: "Vega Küpe",
     description:
@@ -189,7 +182,7 @@ const staticProducts: Product[] = [
     story:
       "Vega, gökyüzünün en parlak yıldızlarından biridir. Bu küpe, o ışığın minimalist bir yorumudur.",
     price: 760,
-    category: "earrings",
+    category: Category.earrings,
     materials: ["925 Ayar Gümüş", "18K Altın Kaplama"],
     sustainability: "Çevre dostu üretim süreçleri ile imal edilmiştir.",
     images: ["/products/vega-1.jpg", "/products/vega-2.jpg"],
@@ -197,7 +190,6 @@ const staticProducts: Product[] = [
     featured: false,
   },
   {
-    id: "12",
     slug: "terra-bileklik",
     name: "Terra Bileklik",
     description:
@@ -205,7 +197,7 @@ const staticProducts: Product[] = [
     story:
       "Terra, yeryüzünün gücünü ve güzelliğini bileğinize taşır. Dayanıklı yapısı ve zarif tasarımıyla her gün yanınızda.",
     price: 650,
-    category: "bracelets",
+    category: Category.bracelets,
     materials: ["925 Ayar Gümüş"],
     sustainability:
       "Geri dönüştürülmüş gümüş ve minimal ambalaj ile teslim edilir.",
@@ -216,123 +208,90 @@ const staticProducts: Product[] = [
 ];
 
 // ────────────────────────────────────────────────────────────
-// Prisma-Backed Data Functions
+// Seed Function
 // ────────────────────────────────────────────────────────────
+async function main() {
+  console.log("🌱 Arlie veritabanı seed başlatılıyor...\n");
 
-/**
- * Prisma'dan gelen ürünü frontend Product tipine dönüştürür.
- * Decimal → number dönüşümü burada yapılır.
- */
-function toProduc(dbProduct: {
-  id: string;
-  slug: string;
-  name: string;
-  description: string;
-  story: string;
-  price: unknown;
-  category: string;
-  materials: string[];
-  sustainability: string;
-  images: string[];
-  inStock: boolean;
-  featured: boolean;
-}): Product {
-  return {
-    id: dbProduct.id,
-    slug: dbProduct.slug,
-    name: dbProduct.name,
-    description: dbProduct.description,
-    story: dbProduct.story,
-    price: Number(dbProduct.price),
-    category: dbProduct.category as Product["category"],
-    materials: dbProduct.materials,
-    sustainability: dbProduct.sustainability,
-    images: dbProduct.images,
-    inStock: dbProduct.inStock,
-    featured: dbProduct.featured,
-  };
-}
+  // 1. Mevcut verileri temizle (geliştirme ortamında)
+  console.log("🗑️  Mevcut veriler temizleniyor...");
+  await prisma.orderItem.deleteMany();
+  await prisma.order.deleteMany();
+  await prisma.address.deleteMany();
+  await prisma.session.deleteMany();
+  await prisma.account.deleteMany();
+  await prisma.verificationToken.deleteMany();
+  await prisma.product.deleteMany();
+  await prisma.user.deleteMany();
 
-/**
- * Prisma client'ı dinamik olarak import eder.
- * DATABASE_URL yoksa null döner → fallback'e düşer.
- */
-async function getPrisma() {
-  if (!process.env.DATABASE_URL) return null;
+  // 2. Admin kullanıcı oluştur
+  console.log("👤 Admin kullanıcı oluşturuluyor...");
+  const adminPasswordHash = await hash("Admin123!", 12);
+  const admin = await prisma.user.create({
+    data: {
+      email: "admin@arlie.com.tr",
+      name: "Arlie Admin",
+      passwordHash: adminPasswordHash,
+      role: "ADMIN",
+      emailVerified: new Date(),
+    },
+  });
+  console.log(`   ✅ Admin: ${admin.email}`);
 
-  try {
-    const { prisma } = await import("@/lib/db");
-    return prisma;
-  } catch {
-    return null;
-  }
-}
+  // 3. Test müşteri oluştur
+  console.log("👤 Test müşteri oluşturuluyor...");
+  const customerPasswordHash = await hash("Customer123!", 12);
+  const customer = await prisma.user.create({
+    data: {
+      email: "test@arlie.com.tr",
+      name: "Test Müşteri",
+      passwordHash: customerPasswordHash,
+      role: "CUSTOMER",
+      emailVerified: new Date(),
+    },
+  });
+  console.log(`   ✅ Müşteri: ${customer.email}`);
 
-// ────────────────────────────────────────────────────────────
-// Public API (Geriye dönük uyumlu)
-// ────────────────────────────────────────────────────────────
+  // 4. Test müşteri için adres oluştur
+  console.log("📍 Test adres oluşturuluyor...");
+  await prisma.address.create({
+    data: {
+      userId: customer.id,
+      title: "Ev",
+      fullName: "Test Müşteri",
+      phone: "+90 555 123 4567",
+      line1: "Bağdat Caddesi No: 123",
+      line2: "Kat: 3 Daire: 5",
+      city: "İstanbul",
+      district: "Kadıköy",
+      zipCode: "34710",
+      isDefault: true,
+    },
+  });
+  console.log("   ✅ Adres oluşturuldu");
 
-export async function getProductBySlug(
-  slug: string
-): Promise<Product | undefined> {
-  const db = await getPrisma();
-
-  if (db) {
-    const product = await db.product.findUnique({ where: { slug } });
-    return product ? toProduc(product) : undefined;
-  }
-
-  return staticProducts.find((p) => p.slug === slug);
-}
-
-export async function getProductsByCategory(
-  category: string
-): Promise<Product[]> {
-  const db = await getPrisma();
-
-  if (db) {
-    const where =
-      category === "all" ? {} : { category: category as Product["category"] };
-    const products = await db.product.findMany({
-      where,
-      orderBy: { createdAt: "desc" },
+  // 5. Ürünleri veritabanına aktar
+  console.log("💎 Ürünler oluşturuluyor...");
+  for (const product of products) {
+    const created = await prisma.product.create({
+      data: product,
     });
-    return products.map(toProduc);
+    console.log(`   ✅ ${created.name} (${created.slug})`);
   }
 
-  if (category === "all") return staticProducts;
-  return staticProducts.filter((p) => p.category === category);
+  console.log(`\n🎉 Seed tamamlandı!`);
+  console.log(`   📊 ${products.length} ürün eklendi`);
+  console.log(`   👤 2 kullanıcı oluşturuldu (admin + test)`);
+  console.log(`   📍 1 adres oluşturuldu`);
+  console.log(`\n   Admin giriş: admin@arlie.com.tr / Admin123!`);
+  console.log(`   Test giriş:  test@arlie.com.tr / Customer123!`);
 }
 
-export async function getFeaturedProducts(): Promise<Product[]> {
-  const db = await getPrisma();
-
-  if (db) {
-    const products = await db.product.findMany({
-      where: { featured: true, inStock: true },
-      orderBy: { createdAt: "desc" },
-    });
-    return products.map(toProduc);
-  }
-
-  return staticProducts.filter((p) => p.featured);
-}
-
-export async function getAllProducts(): Promise<Product[]> {
-  const db = await getPrisma();
-
-  if (db) {
-    const products = await db.product.findMany({
-      orderBy: { createdAt: "desc" },
-    });
-    return products.map(toProduc);
-  }
-
-  return staticProducts;
-}
-
-/**
- * Statik ürünleri dışa aktar (import uyumluluğu için).
- * Yeni kod async fonksiyonları kullanmalıdır.
- */
-export const products = staticProducts;
+main()
+  .catch((e) => {
+    console.error("❌ Seed hatası:", e);
+    process.exit(1);
+  })
+  .finally(async () => {
+    await prisma.$disconnect();
+  });
