@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { Cormorant, Montserrat } from "next/font/google";
+import AuthProvider from "@/components/AuthProvider";
 import "./globals.css";
 
 const cormorant = Cormorant({
@@ -119,7 +120,9 @@ export default function RootLayout({
         />
       </head>
       <body className="min-h-full flex flex-col font-sans bg-arlie-white text-arlie-charcoal antialiased">
-        {children}
+        <AuthProvider>
+          {children}
+        </AuthProvider>
       </body>
     </html>
   );

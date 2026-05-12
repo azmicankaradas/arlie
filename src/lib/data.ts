@@ -223,7 +223,7 @@ const staticProducts: Product[] = [
  * Prisma'dan gelen ürünü frontend Product tipine dönüştürür.
  * Decimal → number dönüşümü burada yapılır.
  */
-function toProduc(dbProduct: {
+function toProduct(dbProduct: {
   id: string;
   slug: string;
   name: string;
@@ -278,8 +278,12 @@ export async function getProductBySlug(
   const db = await getPrisma();
 
   if (db) {
-    const product = await db.product.findUnique({ where: { slug } });
-    return product ? toProduc(product) : undefined;
+    try {
+      const product = await db.product.findUnique({ where: { slug } });
+      return product ? toProduct(product) : undefined;
+    } catch (error) {
+      console.warn("[data] DB sorgusu başarısız, statik fallback kullanılıyor:", error);
+    }
   }
 
   return staticProducts.find((p) => p.slug === slug);
@@ -291,13 +295,17 @@ export async function getProductsByCategory(
   const db = await getPrisma();
 
   if (db) {
-    const where =
-      category === "all" ? {} : { category: category as Product["category"] };
-    const products = await db.product.findMany({
-      where,
-      orderBy: { createdAt: "desc" },
-    });
-    return products.map(toProduc);
+    try {
+      const where =
+        category === "all" ? {} : { category: category as Product["category"] };
+      const products = await db.product.findMany({
+        where,
+        orderBy: { createdAt: "desc" },
+      });
+      return products.map(toProduct);
+    } catch (error) {
+      console.warn("[data] DB sorgusu başarısız, statik fallback kullanılıyor:", error);
+    }
   }
 
   if (category === "all") return staticProducts;
@@ -308,11 +316,15 @@ export async function getFeaturedProducts(): Promise<Product[]> {
   const db = await getPrisma();
 
   if (db) {
-    const products = await db.product.findMany({
-      where: { featured: true, inStock: true },
-      orderBy: { createdAt: "desc" },
-    });
-    return products.map(toProduc);
+    try {
+      const products = await db.product.findMany({
+        where: { featured: true, inStock: true },
+        orderBy: { createdAt: "desc" },
+      });
+      return products.map(toProduct);
+    } catch (error) {
+      console.warn("[data] DB sorgusu başarısız, statik fallback kullanılıyor:", error);
+    }
   }
 
   return staticProducts.filter((p) => p.featured);
@@ -322,10 +334,14 @@ export async function getAllProducts(): Promise<Product[]> {
   const db = await getPrisma();
 
   if (db) {
-    const products = await db.product.findMany({
-      orderBy: { createdAt: "desc" },
-    });
-    return products.map(toProduc);
+    try {
+      const products = await db.product.findMany({
+        orderBy: { createdAt: "desc" },
+      });
+      return products.map(toProduct);
+    } catch (error) {
+      console.warn("[data] DB sorgusu başarısız, statik fallback kullanılıyor:", error);
+    }
   }
 
   return staticProducts;
