@@ -1,36 +1,159 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Arlie — Minimalist Takı E-Ticaret Platformu
 
-## Getting Started
+Lüks minimalist takı tasarımlarını sergileyen modern e-ticaret platformu. Tasarım felsefesi: *"Az ama öz"* — web sitesi bir mağaza değil, bir sanat galerisi hissi verir.
 
-First, run the development server:
+![Next.js](https://img.shields.io/badge/Next.js-16-black)
+![TypeScript](https://img.shields.io/badge/TypeScript-5-blue)
+![Prisma](https://img.shields.io/badge/Prisma-6-2D3748)
+![Auth.js](https://img.shields.io/badge/Auth.js-v5-purple)
+
+---
+
+## 🚀 Hızlı Başlangıç
+
+### Gereksinimler
+
+- Node.js 20+
+- npm 10+
+- Supabase hesabı (PostgreSQL)
+
+### Kurulum
 
 ```bash
+# 1. Repoyu klonla
+git clone https://github.com/azmicankaradas/arlie.git
+cd arlie
+
+# 2. Bağımlılıkları yükle (Prisma client otomatik generate edilir)
+npm install
+
+# 3. Environment değişkenlerini ayarla
+cp .env.example .env.local
+# .env.local dosyasını düzenleyip gerçek değerleri girin
+
+# 4. Veritabanını hazırla
+npx prisma migrate dev --name init
+npm run db:seed
+
+# 5. Geliştirme sunucusunu başlat
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Uygulama [http://localhost:3000](http://localhost:3000) adresinde açılır.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+---
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## 🏗️ Teknoloji Yığını
 
-## Learn More
+| Katman | Teknoloji |
+|--------|-----------|
+| Framework | Next.js 16 (App Router) |
+| Styling | Tailwind CSS 4 |
+| Animasyon | Framer Motion |
+| State | Zustand |
+| Database | Supabase PostgreSQL + Prisma ORM |
+| Auth | Auth.js v5 (Credentials, JWT, RBAC) |
+| Validation | Zod |
+| Deploy | Vercel (Frankfurt) |
 
-To learn more about Next.js, take a look at the following resources:
+---
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## 📁 Proje Yapısı
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+```
+arlie/
+├── prisma/
+│   ├── schema.prisma        # Veritabanı şeması
+│   └── seed.ts              # Seed data
+├── src/
+│   ├── app/
+│   │   ├── api/             # Backend API routes
+│   │   ├── auth/            # Login & Register sayfaları
+│   │   ├── shop/            # Ürün listeleme
+│   │   ├── product/[slug]/  # Ürün detay
+│   │   ├── cart/            # Sepet
+│   │   └── layout.tsx       # Root layout
+│   ├── components/          # UI bileşenleri
+│   ├── lib/                 # Backend utilities
+│   │   ├── auth.ts          # Auth.js v5 config
+│   │   ├── db.ts            # Prisma singleton
+│   │   ├── validation.ts    # Zod schemas
+│   │   ├── security.ts      # bcrypt, rate limiter
+│   │   ├── api-utils.ts     # API helpers
+│   │   └── data.ts          # Data access layer
+│   ├── store/               # Zustand stores
+│   ├── types/               # TypeScript types
+│   └── proxy.ts             # Security headers & CORS
+├── vercel.json              # Vercel config
+├── .env.example             # Env template (development)
+└── .env.production.example  # Env template (production)
+```
 
-## Deploy on Vercel
+---
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## 🔌 API Endpoints
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+### Public (Auth gerektirmez)
+
+| Method | Path | Açıklama |
+|--------|------|----------|
+| GET | `/api/health` | Health check |
+| GET | `/api/products` | Ürün listesi (pagination, filter, sort, search) |
+| GET | `/api/products/:slug` | Ürün detay |
+| POST | `/api/auth/register` | Kullanıcı kaydı |
+
+### Protected (Auth gerektirir)
+
+| Method | Path | Açıklama |
+|--------|------|----------|
+| POST | `/api/auth/change-password` | Şifre değiştirme |
+| GET/PATCH | `/api/user/profile` | Profil görüntüleme/güncelleme |
+| GET/POST | `/api/user/addresses` | Adres listesi/ekleme |
+| PUT/DELETE | `/api/user/addresses/:id` | Adres güncelleme/silme |
+| GET/POST | `/api/orders` | Sipariş listesi/oluşturma |
+
+---
+
+## 🔐 Güvenlik
+
+- **Auth.js v5** — JWT sessions, Credentials provider
+- **bcrypt** — Password hashing (12 rounds)
+- **Zod** — Tüm API inputlarında validation
+- **Rate limiting** — Auth: 5/15min, sensitive: 3/30min
+- **Security headers** — CSP, HSTS, X-Frame-Options, X-Content-Type-Options
+- **CORS** — Whitelist-based origin kontrolü
+- **OWASP** — Generic error messages, no user enumeration
+
+---
+
+## 📦 Scripts
+
+```bash
+npm run dev          # Geliştirme sunucusu
+npm run build        # Production build
+npm run start        # Production sunucusu
+npm run lint         # ESLint
+npm run db:generate  # Prisma client generate
+npm run db:push      # Schema'yı DB'ye pushla
+npm run db:migrate   # Migration oluştur ve uygula
+npm run db:seed      # Seed data yükle
+npm run db:studio    # Prisma Studio (DB GUI)
+npm run db:reset     # Migration'ları sıfırla
+```
+
+---
+
+## 🚀 Deploy (Vercel)
+
+1. [Vercel Dashboard](https://vercel.com/new) → GitHub reposunu import et
+2. Framework: Next.js (otomatik algılanır)
+3. Environment Variables → `.env.production.example`'daki değişkenleri ekle
+4. Deploy!
+
+> **Not:** `AUTH_TRUST_HOST=true` Vercel'de zorunludur.
+
+---
+
+## 📄 Lisans
+
+Private project — Tüm hakları saklıdır.
